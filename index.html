@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT: OMEGA | Ultimate FanTan AI</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --panel: #111;
+            --neon-blue: #00f3ff;
+            --neon-red: #ff0055;
+            --neon-green: #00ff9d;
+            --neon-yellow: #ffcc00;
+            --text-main: #e0e0e0;
+            --grid-line: #222;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Hiệu ứng CRT màn hình cũ */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 600px;
+            z-index: 3;
+            padding-bottom: 50px;
+        }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--neon-blue);
+            padding: 20px 0;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+        h1 { margin: 0; font-size: 1.5em; letter-spacing: 5px; color: var(--neon-blue); }
+
+        /* MAIN MONITOR */
+        .monitor {
+            background: var(--panel);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+
+        /* KẾT QUẢ DỰ ĐOÁN TO */
+        .result-screen {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .final-pred {
+            font-size: 5em;
+            font-weight: bold;
+            color: var(--neon-yellow);
+            text-shadow: 0 0 20px var(--neon-yellow);
+        }
+        .confidence-box {
+            text-align: right;
+        }
+        .conf-val { font-size: 1.5em; color: var(--neon-green); }
+
+        /* THANH TIẾN TRÌNH */
+        .bar-container {
+            height: 6px;
+            background: #222;
+            margin-top: 5px;
+            width: 150px;
+        }
+        .bar-fill {
+            height: 100%;
+            background: var(--neon-green);
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        /* ENGINES STATUS */
+        .engines-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            border-top: 1px dashed #333;
+            padding-top: 15px;
+        }
+        .engine-card {
+            font-size: 0.7em;
+            text-align: center;
+            opacity: 0.7;
+            transition: 0.3s;
+        }
+        .engine-card.active { opacity: 1; text-shadow: 0 0 5px white; border-bottom: 2px solid var(--neon-blue); }
+        .eng-name { color: #888; margin-bottom: 5px; display: block; }
+        .eng-val { font-size: 1.5em; font-weight: bold; }
+
+        /* INPUTS */
+        .input-deck {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .cyber-btn {
+            background: #000;
+            border: 2px solid var(--text-main);
+            color: var(--text-main);
+            padding: 20px 0;
+            font-size: 1.5em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        .cyber-btn:hover {
+            background: var(--text-main);
+            color: #000;
+            box-shadow: 0 0 15px var(--text-main);
+        }
+        .cyber-btn:active { transform: scale(0.95); }
+        
+        /* Màu riêng cho nút */
+        .btn-1 { border-color: var(--neon-red); color: var(--neon-red); }
+        .btn-1:hover { background: var(--neon-red); color: black; box-shadow: 0 0 20px var(--neon-red); }
+        
+        .btn-2 { border-color: var(--neon-green); color: var(--neon-green); }
+        .btn-2:hover { background: var(--neon-green); color: black; box-shadow: 0 0 20px var(--neon-green); }
+
+        .btn-3 { border-color: var(--neon-yellow); color: var(--neon-yellow); }
+        .btn-3:hover { background: var(--neon-yellow); color: black; box-shadow: 0 0 20px var(--neon-yellow); }
+
+        .btn-4 { border-color: var(--neon-blue); color: var(--neon-blue); }
+        .btn-4:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
+
+        /* HISTORY LOG */
+        .log-terminal {
+            background: #050505;
+            border: 1px solid #333;
+            height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .log-line { margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 2px; }
+        .log-new { color: var(--neon-green); }
+        .log-hl { color: white; font-weight: bold; }
+
+        /* CONTROLS */
+        .control-panel { display: flex; gap: 10px; }
+        .sys-btn {
+            flex: 1; padding: 10px; background: #222; border: 1px solid #444; color: #888; cursor: pointer;
+            font-family: inherit; font-size: 0.8em;
+        }
+        .sys-btn:hover { background: #333; color: white; }
+
+        /* MATRIX RAIN */
+        .matrix-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.05; z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>PROJECT: OMEGA</h1>
+        <div style="font-size: 0.7em; color: #666;">MULTI-ENGINE NEURAL PREDICTION</div>
+    </header>
+
+    <div class="monitor">
+        <div style="font-size: 0.8em; color: #555; margin-bottom: 10px;">> SYSTEM OUTPUT:</div>
+        <div class="result-screen">
+            <div>
+                <div style="font-size:0.8em; color:#888;">TARGET</div>
+                <div class="final-pred" id="mainPred">--</div>
+            </div>
+            <div class="confidence-box">
+                <div style="font-size:0.8em; color:#888;">CONFIDENCE</div>
+                <div class="conf-val" id="confValue">0%</div>
+                <div class="bar-container">
+                    <div class="bar-fill" id="confBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="engines-grid">
+            <div class="engine-card" id="cardA">
+                <span class="eng-name">ALPHA (Deep)</span>
+                <span class="eng-val" id="predA">--</span>
+            </div>
+            <div class="engine-card" id="cardB">
+                <span class="eng-name">BETA (Chaos)</span>
+                <span class="eng-val" id="predB">--</span>
+            </div>
+            <div class="engine-card" id="cardC">
+                <span class="eng-name">GAMMA (Trend)</span>
+                <span class="eng-val" id="predC">--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-deck">
+        <button class="cyber-btn btn-1" onclick="processInput(1)">1</button>
+        <button class="cyber-btn btn-2" onclick="processInput(2)">2</button>
+        <button class="cyber-btn btn-3" onclick="processInput(3)">3</button>
+        <button class="cyber-btn btn-4" onclick="processInput(4)">4</button>
+    </div>
+
+    <div class="log-terminal" id="consoleLog">
+        <div class="log-line">> System initialized...</div>
+        <div class="log-line">> Waiting for input data stream...</div>
+    </div>
+
+    <div class="control-panel">
+        <button class="sys-btn" onclick="undo()">UNDO LAST</button>
+        <button class="sys-btn" onclick="resetSystem()" style="color: var(--neon-red); border-color: #500;">SYSTEM PURGE</button>
+    </div>
+</div>
+
+<script>
+    // CORE SYSTEM VARIABLES
+    let historyData = [];
+    
+    // Engine Weights (Độ tin tưởng của AI vào từng thuật toán)
+    // Nếu Engine nào đúng, điểm này sẽ tăng lên
+    let weights = {
+        alpha: 1, // Thiên về tìm mẫu quá khứ
+        beta: 1,  // Thiên về thống kê thuần túy
+        gamma: 1  // Thiên về bắt dây nóng
+    };
+
+    // State các dự đoán ván trước (để so sánh đúng sai)
+    let lastPredictions = { alpha: null, beta: null, gamma: null };
+
+    // --- SETUP ---
+    window.onload = function() {
+        const saved = localStorage.getItem('omegaData');
+        if(saved) {
+            const parsed = JSON.parse(saved);
+            historyData = parsed.data || [];
+            weights = parsed.weights || {alpha:1, beta:1, gamma:1};
+            reRunAnalysis();
+        }
+    }
+
+    function processInput(num) {
+        // 1. Kiểm tra kết quả ván trước xem Engine nào đúng để thưởng điểm
+        if(historyData.length > 0 && lastPredictions.alpha !== null) {
+            adjustWeights(num);
+        }
+
+        // 2. Thêm dữ liệu mới
+        historyData.push(num);
+        saveSystem();
+        
+        // 3. Chạy phân tích
+        runOmegaAI();
+        logToConsole(`Input Received: [ ${num} ] | Database Size: ${historyData.length}`);
+    }
+
+    function adjustWeights(actualResult) {
+        // Nếu Engine đoán đúng, tăng trọng số. Sai thì giữ nguyên hoặc giảm nhẹ.
+        if (lastPredictions.alpha === actualResult) weights.alpha += 0.5;
+        if (lastPredictions.beta === actualResult) weights.beta += 0.5;
+        if (lastPredictions.gamma === actualResult) weights.gamma += 0.5;
+        
+        // Giới hạn trần để không bị lệch quá
+        if(weights.alpha > 10) weights.alpha = 10;
+        if(weights.beta > 10) weights.beta = 10;
+        if(weights.gamma > 10) weights.gamma = 10;
+    }
+
+    // --- CÁC ENGINE XỬ LÝ ---
+    
+    // ENGINE ALPHA: Pattern Matching (Soi cầu sâu)
+    function runAlpha() {
+        if(historyData.length < 5) return null;
+        // Lấy 3 số cuối làm mẫu
+        const pattern = historyData.slice(-3).join(',');
+        let counts = {1:0, 2:0, 3:0, 4:0};
+        let found = false;
+        
+        // Quét quá khứ
+        for(let i=0; i < historyData.length - 3; i++) {
+            if(historyData.slice(i, i+3).join(',') === pattern) {
+                const next = historyData[i+3];
+                counts[next]++;
+                found = true;
+            }
+        }
+        
+        if(!found) return null; // Mẫu lạ chưa từng gặp
+        return getMaxKey(counts);
+    }
+
+    // ENGINE BETA: Probability Balancing (Bù trừ xác suất)
+    function runBeta() {
+        if(historyData.length < 10) return null;
+        // Xem 10 ván gần nhất, số nào ra ít nhất thì dự đoán (đánh gấp thếp)
+        const recent = historyData.slice(-12);
+        let counts = {1:0, 2:0, 3:0, 4:0};
+        recent.forEach(n => counts[n]++);
+        
+        // Tìm số xuất hiện ít nhất
+        let minVal = 100; 
+        let pred = null;
+        for(let i=1; i<=4; i++) {
+            if(counts[i] < minVal) {
+                minVal = counts[i];
+                pred = i;
+            }
+        }
+        return pred;
+    }
+
+    // ENGINE GAMMA: Trend Following (Bám dây)
+    function runGamma() {
+        if(historyData.length < 5) return null;
+        // Xem 5 ván gần nhất, số nào ra nhiều nhất thì theo
+        const recent = historyData.slice(-5);
+        let counts = {1:0, 2:0, 3:0, 4:0};
+        recent.forEach(n => counts[n]++);
+        return getMaxKey(counts);
+    }
+
+    // --- HỆ THỐNG TỔNG HỢP (THE NEXUS) ---
+    function runOmegaAI() {
+        // Chạy từng engine
+        const pAlpha = runAlpha();
+        const pBeta = runBeta();
+        const pGamma = runGamma();
+
+        // Lưu lại để ván sau chấm điểm
+        lastPredictions = { alpha: pAlpha, beta: pBeta, gamma: pGamma };
+
+        // Hiển thị lên HUD nhỏ
+        updateEngineUI('cardA', 'predA', pAlpha, weights.alpha);
+        updateEngineUI('cardB', 'predB', pBeta, weights.beta);
+        updateEngineUI('cardC', 'predC', pGamma, weights.gamma);
+
+        // Tổng hợp phiếu bầu (Voting)
+        let votes = {1:0, 2:0, 3:0, 4:0};
+        
+        if(pAlpha) votes[pAlpha] += weights.alpha;
+        if(pBeta) votes[pBeta] += weights.beta;
+        if(pGamma) votes[pGamma] += weights.gamma;
+
+        // Tìm kẻ chiến thắng
+        let bestNum = getMaxKey(votes);
+        let totalWeight = (pAlpha?weights.alpha:0) + (pBeta?weights.beta:0) + (pGamma?weights.gamma:0);
+        let confidence = totalWeight > 0 ? (votes[bestNum] / totalWeight) * 100 : 0;
+
+        // Hiển thị Main Monitor
+        const mainDisp = document.getElementById('mainPred');
+        const confDisp = document.getElementById('confValue');
+        const confBar = document.getElementById('confBar');
+
+        if(totalWeight === 0 || historyData.length < 5) {
+            mainDisp.innerText = "SCANNING...";
+            mainDisp.style.color = "#555";
+            confDisp.innerText = "0%";
+            confBar.style.width = "0%";
+        } else {
+            mainDisp.innerText = bestNum;
+            // Đổi màu theo số
+            const colors = {1:'var(--neon-red)', 2:'var(--neon-green)', 3:'var(--neon-yellow)', 4:'var(--neon-blue)'};
+            mainDisp.style.color = colors[bestNum];
+            
+            confDisp.innerText = Math.round(confidence) + "%";
+            confBar.style.width = confidence + "%";
+            
+            // Log lý do
+            let reason = `Consensus reached on #${bestNum}.`;
+            if(confidence > 80) reason += " HIGH PROBABILITY LOCK.";
+            logToConsole(reason);
+        }
+    }
+
+    // --- TIỆN ÍCH ---
+    function getMaxKey(obj) {
+        return parseInt(Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b));
+    }
+
+    function updateEngineUI(cardId, textId, val, weight) {
+        const card = document.getElementById(cardId);
+        const text = document.getElementById(textId);
+        text.innerText = val ? val : "--";
+        // Nếu Engine có trọng số cao, làm sáng nó lên
+        card.style.opacity = weight > 2 ? "1" : "0.5";
+        card.style.borderColor = weight > 3 ? "var(--neon-blue)" : "#333";
+    }
+
+    function logToConsole(msg) {
+        const term = document.getElementById('consoleLog');
+        const line = document.createElement('div');
+        line.className = 'log-line';
+        line.innerHTML = `<span style="color:#444">[${new Date().toLocaleTimeString()}]</span> <span class="log-new">${msg}</span>`;
+        term.prepend(line); // Thêm vào đầu
+    }
+
+    function saveSystem() {
+        const data = {
+            data: historyData,
+            weights: weights
+        };
+        localStorage.setItem('omegaData', JSON.stringify(data));
+    }
+
+    function resetSystem() {
+        if(confirm("WARNING: PURGE ALL DATA?")) {
+            historyData = [];
+            weights = {alpha:1, beta:1, gamma:1};
+            lastPredictions = { alpha: null, beta: null, gamma: null };
+            saveSystem();
+            location.reload();
+        }
+    }
+
+    function undo() {
+        historyData.pop();
+        saveSystem();
+        runOmegaAI();
+        logToConsole("Action Undone.");
+    }
+    
+    function reRunAnalysis() {
+        runOmegaAI();
+        logToConsole("System restored from memory.");
+    }
+
+</script>
+
+</body>
+</html>
