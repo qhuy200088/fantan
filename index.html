@@ -3,288 +3,537 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HYBRID FAN TAN | Bẻ & Nuôi</title>
+    <title>Fantan Master AI - Dự Đoán Tài Lộc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg: #101014;
-            --panel: #1c1c24;
-            --mode-switch: #00d2d3; /* Màu chế độ Bẻ */
-            --mode-follow: #ff6b6b; /* Màu chế độ Nuôi */
-            --text: #ffffff;
+            --primary-red: #D32F2F;
+            --dark-red: #8e0000;
+            --gold: #FFD700;
+            --light-gold: #FFF59D;
+            --text-dark: #1a1a1a;
+            --white: #ffffff;
+            --shadow-gold: 0 0 15px rgba(255, 215, 0, 0.6);
+            --bg-texture: radial-gradient(circle, #b71c1c 0%, #590000 100%);
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-texture);
+            color: var(--white);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px;
-            margin: 0;
-            min-height: 100vh;
-        }
-        .container { width: 100%; max-width: 500px; }
-
-        /* THANH TRẠNG THÁI (MODE) */
-        .status-header {
-            text-align: center;
-            margin-bottom: 20px;
-            position: relative;
             padding: 20px;
-            border-radius: 12px;
-            background: #222;
-            border: 2px solid #444;
-            transition: 0.5s;
+        }
+
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header h1 {
+            color: var(--gold);
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px #000;
+            letter-spacing: 1px;
+        }
+
+        header p { color: var(--light-gold); font-style: italic; margin-top: 5px; }
+
+        /* MAIN CONTAINER */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--gold);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* INPUT AREA */
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn-input {
+            background: linear-gradient(145deg, #ffd700, #b8860b);
+            border: 2px solid #fff;
+            color: var(--dark-red);
+            font-size: 1.8rem;
+            font-weight: bold;
+            height: 70px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .btn-input:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-gold);
+            background: #fff;
+            color: #d32f2f;
+        }
+
+        .btn-input:active { transform: scale(0.95); }
+
+        /* HISTORY AREA */
+        .history-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 25px;
+            min-height: 60px;
+            overflow-x: auto;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .history-ball {
+            display: inline-flex;
+            width: 35px;
+            height: 35px;
+            background: var(--white);
+            color: var(--dark-red);
+            border-radius: 50%;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            margin-right: 8px;
+            border: 2px solid var(--gold);
+            font-size: 0.9rem;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* PREDICTION AREA (CORE) */
+        .prediction-section {
+            background: linear-gradient(135deg, rgba(89, 0, 0, 0.9), rgba(0, 0, 0, 0.8));
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
             overflow: hidden;
         }
-        
-        /* Hiệu ứng nền động */
-        .status-header::before {
-            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
-            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.05) 50%, transparent 60%);
-            background-size: 200% 200%;
-            animation: shine 3s infinite;
+
+        .prediction-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 60%);
+            animation: rotateGlow 10s linear infinite;
         }
-        @keyframes shine { 0% {background-position: 100% 0;} 100% {background-position: 0 100%;} }
 
-        .mode-label { font-size: 0.9em; text-transform: uppercase; letter-spacing: 2px; color: #888; }
-        .mode-title { font-size: 2.5em; font-weight: 900; margin: 5px 0; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .mode-desc { font-size: 0.9em; font-style: italic; opacity: 0.8; }
+        @keyframes rotateGlow { 100% { transform: rotate(360deg); } }
 
-        /* KẾT QUẢ COMBO */
-        .combo-box {
-            background: var(--panel);
-            padding: 20px;
-            border-radius: 12px;
+        .pred-title {
+            color: var(--light-gold);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .main-result {
+            font-size: 5rem;
+            font-weight: 700;
+            color: var(--gold);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            margin: 10px 0;
+            position: relative;
+            z-index: 2;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid var(--gold);
+        }
+
+        .stat-label { font-size: 0.8rem; color: #ccc; display: block; margin-bottom: 5px; }
+        .stat-value { font-size: 1.1rem; color: var(--white); font-weight: bold; }
+        
+        .confidence-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        .conf-high { background: #4CAF50; color: white; box-shadow: 0 0 10px #4CAF50; }
+        .conf-med { background: #FF9800; color: white; }
+        .conf-low { background: #9E9E9E; color: white; }
+
+        /* CONTROLS */
+        .controls {
+            margin-top: 20px;
             text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        .combo-val { font-size: 3em; font-weight: bold; letter-spacing: 5px; color: #fff; }
-        .combo-note { font-size: 0.8em; color: #aaa; margin-top: 5px; }
 
-        /* THANH ĐO LỰC (METER) */
-        .meter-container {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 20px; font-size: 0.8em; font-weight: bold;
+        .btn-reset {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
         }
-        .meter-bar {
-            flex-grow: 1; height: 10px; background: #333; margin: 0 10px; border-radius: 5px; overflow: hidden; position: relative;
-        }
-        /* Cái kim chỉ thị */
-        .meter-indicator {
-            position: absolute; top: 0; bottom: 0; width: 4px; background: #fff;
-            left: 50%; transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 0 10px white; z-index: 2;
-        }
-        .zone-switch { position: absolute; left: 0; width: 50%; height: 100%; background: linear-gradient(90deg, var(--mode-switch), transparent); opacity: 0.3; }
-        .zone-follow { position: absolute; right: 0; width: 50%; height: 100%; background: linear-gradient(-90deg, var(--mode-follow), transparent); opacity: 0.3; }
+        .btn-reset:hover { border-color: var(--primary-red); color: var(--primary-red); }
 
-        /* LỊCH SỬ */
-        .history-strip {
-            display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px;
+        /* Message */
+        .system-msg {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 10px;
+            min-height: 20px;
+            font-style: italic;
         }
-        .ball {
-            min-width: 32px; height: 32px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; color: #000; flex-shrink: 0;
-            font-size: 0.9em;
+
+        @media (max-width: 400px) {
+            .btn-input { height: 60px; font-size: 1.5rem; }
+            .main-result { font-size: 4rem; }
         }
-        .b-last { border: 2px solid #fff; box-shadow: 0 0 10px white; transform: scale(1.1); }
-
-        /* KEYPAD */
-        .keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .k-btn {
-            background: #2f3640; color: white; border: none; padding: 15px 0;
-            font-size: 1.5em; border-radius: 8px; cursor: pointer;
-            box-shadow: 0 4px 0 #15181c; transition: 0.1s;
-        }
-        .k-btn:active { transform: translateY(4px); box-shadow: none; }
-        
-        .k1 { border-bottom: 3px solid #ff7675; }
-        .k2 { border-bottom: 3px solid #55efc4; }
-        .k3 { border-bottom: 3px solid #ffeaa7; }
-        .k4 { border-bottom: 3px solid #74b9ff; }
-
-        .control-row { display: flex; justify-content: space-between; margin-top: 20px; color: #666; font-size: 0.8em; }
-
     </style>
 </head>
 <body>
 
-<div class="container">
-    
-    <div class="status-header" id="headerBox">
-        <div class="mode-label">CHIẾN THUẬT HIỆN TẠI</div>
-        <div class="mode-title" id="modeTitle">---</div>
-        <div class="mode-desc" id="modeDesc">Đang chờ dữ liệu phân tích...</div>
-    </div>
+    <header>
+        <h1>Fantan Master AI</h1>
+        <p>Hệ Thống Phân Tích Dữ Liệu & Dự Đoán Tài Lộc</p>
+    </header>
 
-    <div class="meter-container">
-        <span style="color:var(--mode-switch)">BẺ CẦU (Nhảy)</span>
-        <div class="meter-bar">
-            <div class="zone-switch"></div>
-            <div class="zone-follow"></div>
-            <div class="meter-indicator" id="indicator"></div>
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 10px; color: var(--gold); font-size: 0.9rem;">NHẬP KẾT QUẢ VÁN VỪA RA</div>
+        <div class="input-section">
+            <button class="btn-input" onclick="processInput(1)">1</button>
+            <button class="btn-input" onclick="processInput(2)">2</button>
+            <button class="btn-input" onclick="processInput(3)">3</button>
+            <button class="btn-input" onclick="processInput(4)">4</button>
         </div>
-        <span style="color:var(--mode-follow)">NUÔI CẦU (Bệt)</span>
+
+        <div class="history-section" id="history-container">
+            </div>
+
+        <div id="system-msg" class="system-msg">Đang chờ dữ liệu đầu vào...</div>
+
+        <div class="prediction-section">
+            <div class="pred-title">DỰ ĐOÁN KẾT QUẢ TIẾP THEO (AI)</div>
+            
+            <div id="result-display" class="main-result">?</div>
+            
+            <div id="confidence-display" class="confidence-badge conf-low">CHỜ DỮ LIỆU</div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-label">Lót (Support)</span>
+                    <span class="stat-value" id="support-pick">--</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Combo 3 Số Tối Ưu</span>
+                    <span class="stat-value" id="combo-pick">--</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Thuật toán Pattern</span>
+                    <span class="stat-value" id="pattern-status">N/A</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Cầu (Trend)</span>
+                    <span class="stat-value" id="trend-status">--</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-reset" onclick="resetData()">↺ Reset Dữ Liệu</button>
+        </div>
     </div>
 
-    <div class="combo-box">
-        <div style="font-size: 0.8em; color: #888; margin-bottom:5px;">COMBO TỐI ƯU:</div>
-        <div class="combo-val" id="comboResult">---</div>
-        <div class="combo-note" id="comboLogic">...</div>
-    </div>
+    <script>
+        // --- DATA STORE ---
+        let historyData = [];
+        // Ma trận Markov 4x4 để lưu tần suất chuyển đổi từ i sang j
+        // Index 0 tương ứng số 1, index 3 tương ứng số 4
+        let markovMatrix = [
+            [0,0,0,0], 
+            [0,0,0,0], 
+            [0,0,0,0], 
+            [0,0,0,0]
+        ];
 
-    <div class="history-strip" id="hStrip"></div>
+        // --- CONSTANTS ---
+        const MIN_DATA_FOR_PREDICTION = 5;
+        const WEIGHTS = {
+            FREQUENCY: 15,  // Tần suất xuất hiện
+            MARKOV: 35,     // Xác suất chuyển đổi (Ván trước -> Ván sau)
+            PATTERN: 40,    // So khớp mẫu chuỗi (History matching)
+            STREAK: 10      // Bonus cho cầu bệt/cầu 1-2
+        };
 
-    <div style="margin-bottom:5px; font-weight:bold; font-size:0.9em;">NHẬP SỐ VỪA RA:</div>
-    <div class="keypad">
-        <button class="k-btn k1" onclick="add(1)">1</button>
-        <button class="k-btn k2" onclick="add(2)">2</button>
-        <button class="k-btn k3" onclick="add(3)">3</button>
-        <button class="k-btn k4" onclick="add(4)">4</button>
-    </div>
+        // --- CORE FUNCTIONS ---
 
-    <div class="control-row">
-        <span id="dataCount">Dữ liệu: 0 ván</span>
-        <span onclick="reset()" style="cursor:pointer; color:#ff7675; text-decoration:underline;">Reset Data</span>
-    </div>
-</div>
+        function processInput(number) {
+            // 1. Cập nhật dữ liệu
+            updateMarkov(number);
+            historyData.push(number);
 
-<script>
-    let history = [];
-    const colors = {1:'#ff7675', 2:'#55efc4', 3:'#ffeaa7', 4:'#74b9ff'};
+            // 2. Cập nhật giao diện Lịch sử
+            renderHistory();
 
-    window.onload = () => {
-        if(localStorage.getItem('hybridFanTan')) {
-            history = JSON.parse(localStorage.getItem('hybridFanTan'));
-            analyze();
+            // 3. Chạy phân tích AI
+            if (historyData.length < MIN_DATA_FOR_PREDICTION) {
+                updateSystemMsg(`Cần nhập thêm ${MIN_DATA_FOR_PREDICTION - historyData.length} ván để AI phân tích.`);
+                return;
+            }
+
+            analyzeAndPredict();
         }
-    };
 
-    function add(n) {
-        history.unshift(n);
-        if(history.length > 40) history.pop();
-        localStorage.setItem('hybridFanTan', JSON.stringify(history));
-        analyze();
-    }
-
-    function reset() {
-        if(confirm("Xóa toàn bộ?")) {
-            history = [];
-            localStorage.removeItem('hybridFanTan');
-            location.reload();
-        }
-    }
-
-    function analyze() {
-        renderHistory();
-        document.getElementById('dataCount').innerText = `Dữ liệu: ${history.length} ván`;
-
-        if(history.length < 5) {
-            document.getElementById('modeTitle').innerText = "LOADING...";
-            return;
+        // Cập nhật ma trận Markov dựa trên ván trước và ván hiện tại
+        function updateMarkov(currentNum) {
+            if (historyData.length === 0) return;
+            const prevNum = historyData[historyData.length - 1];
+            // Trừ 1 để về index 0-3
+            markovMatrix[prevNum - 1][currentNum - 1]++;
         }
 
-        // --- BỘ NÃO HYBRID ---
-        
-        // 1. Phân tích Xu hướng (Trend Analysis)
-        // Tính xem trong 15 ván gần nhất, xu hướng là Bệt (Repeat) hay Nhảy (Switch)
-        let sampleSize = Math.min(history.length - 1, 15);
-        let repeatScore = 0; // Điểm Bệt
-        let switchScore = 0; // Điểm Nhảy
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            container.innerHTML = '';
+            // Chỉ hiển thị 20 ván gần nhất để UI không bị vỡ
+            const displayData = historyData.slice(-20); 
+            
+            displayData.forEach(num => {
+                const ball = document.createElement('div');
+                ball.className = 'history-ball';
+                ball.textContent = num;
+                // Màu sắc riêng cho từng số (tùy chọn, ở đây giữ đồng bộ đỏ/vàng)
+                container.appendChild(ball);
+            });
+            // Auto scroll to right
+            container.scrollLeft = container.scrollWidth;
+        }
 
-        for(let i=0; i<sampleSize; i++) {
-            if(history[i] === history[i+1]) {
-                repeatScore += 1.5; // Bệt được tính điểm cao hơn chút để nhạy
+        // --- AI ALGORITHMS ---
+
+        function analyzeAndPredict() {
+            // Khởi tạo điểm số cho 1, 2, 3, 4
+            let scores = {1: 0, 2: 0, 3: 0, 4: 0};
+            
+            // 1. Frequency Analysis (Tần suất trong 20 ván gần nhất)
+            const recentHistory = historyData.slice(-20);
+            const total = recentHistory.length;
+            for(let i=1; i<=4; i++) {
+                const count = recentHistory.filter(n => n === i).length;
+                scores[i] += (count / total) * WEIGHTS.FREQUENCY;
+            }
+
+            // 2. Markov Analysis (Dựa trên ván vừa ra)
+            const lastNum = historyData[historyData.length - 1];
+            const transitionRow = markovMatrix[lastNum - 1];
+            const totalTransitions = transitionRow.reduce((a, b) => a + b, 0);
+            
+            if (totalTransitions > 0) {
+                for(let i=0; i<4; i++) {
+                    const prob = transitionRow[i] / totalTransitions;
+                    scores[i+1] += prob * WEIGHTS.MARKOV;
+                }
+            }
+
+            // 3. Pattern Matching (Tìm chuỗi 3 số cuối lặp lại trong quá khứ)
+            let patternMsg = "Chưa rõ";
+            if (historyData.length >= 4) {
+                // Lấy chuỗi mẫu (Pattern) là 2 hoặc 3 số cuối cùng
+                const patternLength = Math.min(3, Math.floor(historyData.length / 2));
+                const pattern = historyData.slice(-patternLength);
+                
+                // Quét quá khứ để tìm pattern tương tự
+                // Không quét đoạn cuối cùng vừa thêm vào
+                let matches = 0;
+                let nextNumCounts = {1:0, 2:0, 3:0, 4:0};
+
+                for (let i = 0; i < historyData.length - patternLength; i++) {
+                    let isMatch = true;
+                    for (let j = 0; j < patternLength; j++) {
+                        if (historyData[i+j] !== pattern[j]) {
+                            isMatch = false;
+                            break;
+                        }
+                    }
+                    if (isMatch) {
+                        const nextVal = historyData[i + patternLength];
+                        if(nextVal) {
+                            nextNumCounts[nextVal]++;
+                            matches++;
+                        }
+                    }
+                }
+
+                if (matches > 0) {
+                    patternMsg = `Khớp ${matches} mẫu`;
+                    for(let i=1; i<=4; i++) {
+                        scores[i] += (nextNumCounts[i] / matches) * WEIGHTS.PATTERN;
+                    }
+                } else {
+                    patternMsg = "Mẫu mới";
+                }
+            }
+
+            // 4. Streak Detection (Phát hiện Cầu bệt)
+            // Nếu 2 ván gần nhất giống nhau, khả năng cao bệt tiếp (logic Fantan thường gặp)
+            if (historyData.length >= 2) {
+                if (historyData[historyData.length-1] === historyData[historyData.length-2]) {
+                    scores[lastNum] += WEIGHTS.STREAK; // Cộng điểm cho số vừa ra
+                    document.getElementById('trend-status').innerText = "Cầu Bệt";
+                } else {
+                    document.getElementById('trend-status').innerText = "Cầu Nhảy";
+                }
+            }
+
+            // --- FINALIZE RESULT ---
+            
+            // Chuyển scores object thành array và sort
+            let sortedScores = Object.keys(scores).map(key => {
+                return { num: parseInt(key), score: scores[key] };
+            }).sort((a, b) => b.score - a.score);
+
+            const bestPick = sortedScores[0];
+            const secondPick = sortedScores[1];
+            const thirdPick = sortedScores[2];
+
+            // Tính độ tin cậy (Confidence)
+            // Logic: Điểm số của Best Pick càng cách xa Second Pick thì càng tin cậy
+            const totalScore = sortedScores.reduce((sum, item) => sum + item.score, 0);
+            let confidencePercent = 0;
+            if (totalScore > 0) {
+                confidencePercent = (bestPick.score / totalScore) * 100;
+                // Scale lại một chút để hiển thị đẹp hơn
+                confidencePercent = Math.min(95, confidencePercent * 1.2); 
+            }
+
+            displayResults(bestPick.num, [secondPick.num, thirdPick.num], sortedScores, confidencePercent, patternMsg);
+        }
+
+        function displayResults(best, supports, allSorted, confidence, patternText) {
+            const resultDisplay = document.getElementById('result-display');
+            const supportDisplay = document.getElementById('support-pick');
+            const comboDisplay = document.getElementById('combo-pick');
+            const confDisplay = document.getElementById('confidence-display');
+            const sysMsg = document.getElementById('system-msg');
+            const patternStatus = document.getElementById('pattern-status');
+
+            // Animation effect for result change
+            resultDisplay.style.transform = "scale(0.5)";
+            resultDisplay.style.opacity = "0";
+            
+            setTimeout(() => {
+                resultDisplay.textContent = best;
+                resultDisplay.style.transform = "scale(1)";
+                resultDisplay.style.opacity = "1";
+            }, 200);
+
+            // Supports
+            supportDisplay.textContent = `${supports[0]} - ${supports[1]}`;
+
+            // Combo (Bỏ con số điểm thấp nhất)
+            // 3 con đầu tiên trong sorted list
+            let combo = [allSorted[0].num, allSorted[1].num, allSorted[2].num].sort((a,b)=>a-b);
+            comboDisplay.textContent = combo.join(", ");
+
+            // Pattern Text
+            patternStatus.textContent = patternText;
+
+            // Confidence Logic
+            let confClass = 'conf-low';
+            let confText = 'THẬN TRỌNG';
+
+            if (confidence > 75) {
+                confClass = 'conf-high';
+                confText = `CỰC KẾT (${Math.round(confidence)}%)`;
+                sysMsg.textContent = "Cầu đẹp! Khả năng thắng rất cao.";
+                sysMsg.style.color = "#4CAF50";
+            } else if (confidence > 55) {
+                confClass = 'conf-med';
+                confText = `KHẢ QUAN (${Math.round(confidence)}%)`;
+                sysMsg.textContent = "Có tín hiệu tốt, nên vào tiền vừa phải.";
+                sysMsg.style.color = "#FFC107";
             } else {
-                switchScore += 1;
+                confText = `CẦU LOẠN (${Math.round(confidence)}%)`;
+                sysMsg.textContent = "Dữ liệu xung đột, khuyên nên bỏ hoặc đánh nhỏ.";
+                sysMsg.style.color = "#ccc";
+            }
+
+            confDisplay.className = `confidence-badge ${confClass}`;
+            confDisplay.textContent = confText;
+        }
+
+        function updateSystemMsg(msg) {
+            document.getElementById('system-msg').textContent = msg;
+            document.getElementById('system-msg').style.color = "#aaa";
+        }
+
+        function resetData() {
+            if(confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu lịch sử?")) {
+                historyData = [];
+                markovMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+                renderHistory();
+                document.getElementById('result-display').textContent = "?";
+                document.getElementById('confidence-display').className = "confidence-badge conf-low";
+                document.getElementById('confidence-display').textContent = "SẴN SÀNG";
+                document.getElementById('support-pick').textContent = "--";
+                document.getElementById('combo-pick').textContent = "--";
+                document.getElementById('pattern-status').textContent = "N/A";
+                document.getElementById('trend-status').textContent = "--";
+                updateSystemMsg("Đã reset dữ liệu. Mời nhập kết quả mới.");
             }
         }
-
-        // Tính toán vị trí kim chỉ thị (0% là Full Nhảy, 100% là Full Bệt)
-        let total = repeatScore + switchScore;
-        let trendRatio = (repeatScore / total) * 100; // 0 -> 100
-        
-        // Di chuyển kim chỉ thị
-        document.getElementById('indicator').style.left = trendRatio + "%";
-
-        // 2. Quyết định Chiến Thuật (Tactical Decision)
-        const header = document.getElementById('headerBox');
-        const title = document.getElementById('modeTitle');
-        const desc = document.getElementById('modeDesc');
-        const comboRes = document.getElementById('comboResult');
-        const comboLog = document.getElementById('comboLogic');
-
-        let lastNum = history[0];
-
-        // --- LOGIC CHÍNH ---
-        if (trendRatio < 40) {
-            // == CHẾ ĐỘ BẺ CẦU (SWITCH MODE) ==
-            // Vì cầu đang nhảy loạn xạ, ta sẽ LOẠI BỎ số vừa ra.
-            header.style.borderColor = "var(--mode-switch)";
-            title.innerText = "CHẾ ĐỘ: BẺ CẦU";
-            title.style.color = "var(--mode-switch)";
-            desc.innerText = `Cầu đang nhảy (${(100-trendRatio).toFixed(0)}%). Chiến thuật: Loại số vừa ra.`;
-            
-            // Tạo Combo: Lấy tất cả trừ số vừa ra
-            let combo = [1,2,3,4].filter(n => n !== lastNum).join(' - ');
-            
-            comboRes.innerText = combo;
-            comboRes.style.color = "var(--mode-switch)";
-            comboLog.innerText = `Đã loại bỏ số ${lastNum} vì xác suất về lại thấp.`;
-
-        } else if (trendRatio > 60) {
-            // == CHẾ ĐỘ NUÔI CẦU (FOLLOW MODE) ==
-            // Vì cầu đang bệt dính, ta sẽ GIỮ LẠI số vừa ra.
-            header.style.borderColor = "var(--mode-follow)";
-            title.innerText = "CHẾ ĐỘ: NUÔI CẦU";
-            title.style.color = "var(--mode-follow)";
-            desc.innerText = `Cầu đang bệt (${trendRatio.toFixed(0)}%). Chiến thuật: Bám theo dây.`;
-
-            // Tạo Combo: Số vừa ra + 2 số Hot nhất còn lại
-            // Tìm 2 số phụ hot nhất
-            let counts = {1:0, 2:0, 3:0, 4:0};
-            history.slice(0, 15).forEach(n => counts[n]++);
-            counts[lastNum] = -999; // Không tính chính nó (vì chắc chắn chọn rồi)
-            
-            // Sắp xếp tìm 2 số cao điểm nhất
-            let sorted = Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
-            let sub1 = parseInt(sorted[0]);
-            let sub2 = parseInt(sorted[1]);
-
-            let comboArr = [lastNum, sub1, sub2].sort((a,b)=>a-b);
-            
-            comboRes.innerText = comboArr.join(' - ');
-            comboRes.style.color = "var(--mode-follow)";
-            comboLog.innerText = `Đã chọn số ${lastNum} (Chủ lực) + ${sub1}, ${sub2} (Hỗ trợ).`;
-
-        } else {
-            // == VÙNG TRUNG LẬP (NEUTRAL) ==
-            // 40% - 60%: Khó đoán
-            header.style.borderColor = "#666";
-            title.innerText = "THẬN TRỌNG";
-            title.style.color = "#ccc";
-            desc.innerText = "Thị trường đang chuyển giao (50/50). Đánh nhẹ tay.";
-            
-            // Mặc định vẫn ưu tiên Bẻ nhẹ (vì Fan Tan xu hướng nhảy nhiều hơn)
-            let combo = [1,2,3,4].filter(n => n !== lastNum).join(' - ');
-            comboRes.innerText = combo;
-            comboRes.style.color = "#ccc";
-            comboLog.innerText = "Gợi ý: Đánh nhảy (Ưu tiên an toàn).";
-        }
-    }
-
-    function renderHistory() {
-        const strip = document.getElementById('hStrip');
-        strip.innerHTML = '';
-        history.forEach((n, idx) => {
-            let extraClass = (idx === 0) ? 'b-last' : '';
-            strip.innerHTML += `<div class="ball ${extraClass}" style="background:${colors[n]}">${n}</div>`;
-        });
-    }
-</script>
-
+    </script>
 </body>
 </html>
